@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+# Never commit real backend URLs or the token.
+web/config.js
+*.local.*

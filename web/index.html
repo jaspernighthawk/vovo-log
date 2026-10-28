@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vovo Log">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101013" media="(prefers-color-scheme: dark)">
+  <title>Vovo Log</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <span class="status" id="status"></span>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-haspopup="menu" aria-expanded="false">🌈</button>
+    <div class="menu" id="menu" role="menu" hidden>
+      <button type="button" role="menuitem" data-action="log-only">Log only</button>
+      <a role="menuitem" id="sheetLink" target="_blank" rel="noopener">View chart in Google Sheets</a>
+      <button type="button" role="menuitem" data-action="sync">Sync now</button>
+      <hr>
+      <button type="button" role="menuitem" data-action="copy-setup">Copy setup code for the other phone</button>
+      <button type="button" role="menuitem" data-action="settings">Settings</button>
+      <button type="button" role="menuitem" data-action="test">Test connection</button>
+    </div>
+  </header>
+
+  <main class="tape" id="tape" aria-label="Log"></main>
+
+  <nav class="pad" id="pad" aria-label="Add entry">
+    <button type="button" class="pad-btn" data-type="cath">mL</button>
+    <button type="button" class="pad-btn" data-type="temp">°F</button>
+    <button type="button" class="pad-btn" data-type="med">med</button>
+    <button type="button" class="pad-btn" data-type="comment">other</button>
+  </nav>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <form class="sheet" id="entrySheet" hidden autocomplete="off" novalidate>
+    <div class="sheet-head">
+      <label class="sheet-title" for="entryValue" id="entryTitle"></label>
+      <button type="button" class="close" data-close aria-label="Cancel">✕</button>
+    </div>
+    <div class="field">
+      <input id="entryValue" name="value" enterkeyhint="done">
+      <span class="unit" id="entryUnit"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="time-field" id="timeField" hidden>
+      <input type="datetime-local" id="entryTime" aria-label="When">
+    </div>
+    <p class="error" id="entryError" role="alert"></p>
+    <button type="submit" class="primary" id="submitBtn">Log now</button>
+    <button type="button" class="quiet" id="timeToggle">Different time…</button>
+  </form>
+
+  <form class="sheet setup" id="setupSheet" hidden autocomplete="off" novalidate>
+    <div class="sheet-head">
+      <h2 class="sheet-title">Set up this phone</h2>
+      <button type="button" class="close" data-close aria-label="Close">✕</button>
+    </div>
+    <label>Setup code <small>(from the other phone — fills in the rest)</small>
+      <input id="setupCode" autocapitalize="off" spellcheck="false">
+    </label>
+    <label>Who uses this phone?
+      <input id="setupWho" autocapitalize="words" required>
+    </label>
+    <label>Apps Script web app URL
+      <input id="setupUrl" type="url" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+    </label>
+    <label>Token
+      <input id="setupToken" autocapitalize="off" spellcheck="false">
+    </label>
+    <label>Dashboard link <small>(optional)</small>
+      <input id="setupSheetUrl" type="url" autocapitalize="off" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/…">
+    </label>
+    <p class="error" id="setupError" role="alert"></p>
+    <button type="submit" class="primary">Save</button>
+  </form>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
