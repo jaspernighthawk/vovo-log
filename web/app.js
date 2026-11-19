@@ -46,7 +46,8 @@
     status: $('status'), menuBtn: $('menuBtn'), menu: $('menu'), sheetLink: $('sheetLink'),
     tape: $('tape'), pad: $('pad'), scrim: $('scrim'), toast: $('toast'),
     entrySheet: $('entrySheet'), entryTitle: $('entryTitle'), entryValue: $('entryValue'),
-    entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryDate: $('entryDate'), entryTime: $('entryTime'),
+    entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryDate: $('entryDate'),
+    entryHour: $('entryHour'), entryMinute: $('entryMinute'), entryAmPm: $('entryAmPm'),
     entryError: $('entryError'), submitBtn: $('submitBtn'), timeToggle: $('timeToggle'),
     notRecordedWrap: $('notRecordedWrap'), notRecorded: $('notRecorded'),
     setupSheet: $('setupSheet'), setupCode: $('setupCode'), setupWho: $('setupWho'), setupUrl: $('setupUrl'),
@@ -242,18 +243,26 @@
   let currentType = null;
   let customTime = false;
 
-  // iOS ignores step= on datetime-local but honours it on a plain time input,
-  // so the custom time is two fields: date and time.
+  // iOS ignores step= on time inputs, so the time is three <select>s (hour,
+  // minute in TIME_STEP_MIN steps, AM/PM), which iOS shows as its wheel picker.
+  const fill = (sel, values) => { sel.innerHTML = ''; values.forEach((v) => sel.add(new Option(v, v))); };
+  fill(el.entryHour, Array.from({ length: 12 }, (_, i) => String(i + 1)));
+  fill(el.entryMinute, Array.from({ length: 60 / TIME_STEP_MIN }, (_, i) => pad2(i * TIME_STEP_MIN)));
+
   function setCustomTime(d) {
     const r = new Date(d);
     r.setMinutes(Math.round(r.getMinutes() / TIME_STEP_MIN) * TIME_STEP_MIN, 0, 0);
     el.entryDate.value = dayKey(r);
-    el.entryTime.value = `${pad2(r.getHours())}:${pad2(r.getMinutes())}`;
+    el.entryHour.value = String(r.getHours() % 12 || 12);
+    el.entryMinute.value = pad2(r.getMinutes());
+    el.entryAmPm.value = r.getHours() < 12 ? 'AM' : 'PM';
   }
 
   function getCustomTime() {
-    if (!el.entryDate.value || !el.entryTime.value) return null;
-    const d = new Date(`${el.entryDate.value}T${el.entryTime.value}`);
+    if (!el.entryDate.value) return null;
+    let h = Number(el.entryHour.value) % 12;
+    if (el.entryAmPm.value === 'PM') h += 12;
+    const d = new Date(`${el.entryDate.value}T${pad2(h)}:${el.entryMinute.value}`);
     return isNaN(d.getTime()) ? null : d;
   }
 
@@ -437,7 +446,7 @@
     el.timeField.hidden = !customTime;
     el.submitBtn.textContent = customTime ? 'Log at that time' : 'Log now';
     el.timeToggle.textContent = customTime ? 'Use the current time instead' : 'Different time…';
-    if (customTime) { setCustomTime(new Date()); el.entryTime.focus(); }
+    if (customTime) { setCustomTime(new Date()); el.entryValue.blur(); }
   });
 
   el.setupCode.addEventListener('input', () => {

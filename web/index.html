@@ -57,7 +57,9 @@
     </label>
     <div class="time-field" id="timeField" hidden>
       <input type="date" id="entryDate" aria-label="Date">
-      <input type="time" id="entryTime" step="300" aria-label="Time">
+      <select id="entryHour" aria-label="Hour"></select>
+      <select id="entryMinute" aria-label="Minute"></select>
+      <select id="entryAmPm" aria-label="AM or PM"><option>AM</option><option>PM</option></select>
     </div>
     <p class="error" id="entryError" role="alert"></p>
     <button type="submit" class="primary" id="submitBtn">Log now</button>
