@@ -47,7 +47,7 @@
     tape: $('tape'), pad: $('pad'), scrim: $('scrim'), toast: $('toast'),
     entrySheet: $('entrySheet'), entryTitle: $('entryTitle'), entryValue: $('entryValue'),
     entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryDate: $('entryDate'),
-    entryHour: $('entryHour'), entryMinute: $('entryMinute'), entryAmPm: $('entryAmPm'),
+    entryClock: $('entryClock'), ampm: document.querySelector('.ampm'),
     entryError: $('entryError'), submitBtn: $('submitBtn'), timeToggle: $('timeToggle'),
     notRecordedWrap: $('notRecordedWrap'), notRecorded: $('notRecorded'),
     setupSheet: $('setupSheet'), setupCode: $('setupCode'), setupWho: $('setupWho'), setupUrl: $('setupUrl'),
@@ -243,26 +243,43 @@
   let currentType = null;
   let customTime = false;
 
-  // iOS ignores step= on time inputs, so the time is three <select>s (hour,
-  // minute in TIME_STEP_MIN steps, AM/PM), which iOS shows as its wheel picker.
-  const fill = (sel, values) => { sel.innerHTML = ''; values.forEach((v) => sel.add(new Option(v, v))); };
-  fill(el.entryHour, Array.from({ length: 12 }, (_, i) => String(i + 1)));
-  fill(el.entryMinute, Array.from({ length: 60 / TIME_STEP_MIN }, (_, i) => pad2(i * TIME_STEP_MIN)));
+  // The time is typed on the number pad as digits ("835" or "0835" → 8:35),
+  // with an AM/PM toggle. iOS's own time pickers ignore step= and scroll
+  // through all 60 minutes, which is why we don't use them.
+  function setAmPm(v) {
+    el.ampm.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ampm === v)));
+  }
+  const getAmPm = () => el.ampm.querySelector('[aria-pressed="true"]').dataset.ampm;
+
+  // "835" → {h: 8, m: 35}; "12" → {h: 12, m: 0}; null when not a valid 12-hour time.
+  function parseClock(text) {
+    const digits = text.replace(/\D/g, '');
+    if (!digits || digits.length > 4) return null;
+    const h = Number(digits.length <= 2 ? digits : digits.slice(0, -2));
+    const m = Number(digits.length <= 2 ? 0 : digits.slice(-2));
+    if (h < 1 || h > 12 || m > 59) return null;
+    return { h, m };
+  }
+
+  function formatClock(text) {
+    const digits = text.replace(/\D/g, '').slice(0, 4);
+    return digits.length <= 2 ? digits : `${digits.slice(0, -2)}:${digits.slice(-2)}`;
+  }
 
   function setCustomTime(d) {
     const r = new Date(d);
     r.setMinutes(Math.round(r.getMinutes() / TIME_STEP_MIN) * TIME_STEP_MIN, 0, 0);
     el.entryDate.value = dayKey(r);
-    el.entryHour.value = String(r.getHours() % 12 || 12);
-    el.entryMinute.value = pad2(r.getMinutes());
-    el.entryAmPm.value = r.getHours() < 12 ? 'AM' : 'PM';
+    el.entryClock.value = `${r.getHours() % 12 || 12}:${pad2(r.getMinutes())}`;
+    setAmPm(r.getHours() < 12 ? 'AM' : 'PM');
   }
 
   function getCustomTime() {
-    if (!el.entryDate.value) return null;
-    let h = Number(el.entryHour.value) % 12;
-    if (el.entryAmPm.value === 'PM') h += 12;
-    const d = new Date(`${el.entryDate.value}T${pad2(h)}:${el.entryMinute.value}`);
+    const t = parseClock(el.entryClock.value);
+    if (!el.entryDate.value || !t) return null;
+    let h = t.h % 12;
+    if (getAmPm() === 'PM') h += 12;
+    const d = new Date(`${el.entryDate.value}T${pad2(h)}:${pad2(t.m)}`);
     return isNaN(d.getTime()) ? null : d;
   }
 
@@ -337,7 +354,7 @@
     let when = new Date();
     if (customTime) {
       when = getCustomTime();
-      if (!when) { el.entryError.textContent = 'Pick a date and time.'; return; }
+      if (!when) { el.entryError.textContent = 'Enter a time like 8:35 (hour 1–12).'; el.entryClock.focus(); return; }
     }
 
     const entry = {
@@ -435,6 +452,15 @@
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeSheets(); });
 
   el.entrySheet.addEventListener('submit', (ev) => { ev.preventDefault(); submitEntry(); });
+  el.entryClock.addEventListener('input', () => {
+    const v = formatClock(el.entryClock.value);
+    if (v !== el.entryClock.value) el.entryClock.value = v;
+    el.entryError.textContent = '';
+  });
+  el.ampm.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-ampm]');
+    if (b) setAmPm(b.dataset.ampm);
+  });
   el.notRecorded.addEventListener('change', () => {
     const on = el.notRecorded.checked;
     el.entryValue.disabled = on;
@@ -446,7 +472,7 @@
     el.timeField.hidden = !customTime;
     el.submitBtn.textContent = customTime ? 'Log at that time' : 'Log now';
     el.timeToggle.textContent = customTime ? 'Use the current time instead' : 'Different time…';
-    if (customTime) { setCustomTime(new Date()); el.entryValue.blur(); }
+    if (customTime) { setCustomTime(new Date()); el.entryClock.focus(); el.entryClock.select(); }
   });
 
   el.setupCode.addEventListener('input', () => {

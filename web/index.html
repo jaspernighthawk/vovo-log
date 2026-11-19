@@ -57,9 +57,11 @@
     </label>
     <div class="time-field" id="timeField" hidden>
       <input type="date" id="entryDate" aria-label="Date">
-      <select id="entryHour" aria-label="Hour"></select>
-      <select id="entryMinute" aria-label="Minute"></select>
-      <select id="entryAmPm" aria-label="AM or PM"><option>AM</option><option>PM</option></select>
+      <input id="entryClock" inputmode="numeric" placeholder="8:35" maxlength="5" aria-label="Time" autocomplete="off">
+      <div class="ampm" role="group" aria-label="AM or PM">
+        <button type="button" data-ampm="AM" aria-pressed="true">AM</button>
+        <button type="button" data-ampm="PM" aria-pressed="false">PM</button>
+      </div>
     </div>
     <p class="error" id="entryError" role="alert"></p>
     <button type="submit" class="primary" id="submitBtn">Log now</button>

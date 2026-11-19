@@ -343,7 +343,7 @@ body.log-only .pad { display: none; }
 .field:has(input:disabled) { opacity: 0.4; }
 
 .time-field { display: flex; flex-wrap: wrap; gap: 8px; }
-.time-field input, .time-field select {
+.time-field input {
   min-width: 0;
   padding: 12px 10px;
   border: 0;
@@ -355,8 +355,20 @@ body.log-only .pad { display: none; }
   appearance: none;
   text-align: center;
 }
-.time-field input { flex: 1 0 100%; }
-.time-field select { flex: 1; }
+.time-field input:focus { outline: 2px solid var(--accent, var(--cath)); outline-offset: -2px; }
+#entryDate { flex: 1 0 100%; }
+#entryClock { flex: 1; font-family: var(--round); font-size: 26px; font-weight: 600; padding: 6px 10px; }
+.ampm { flex: 1; display: flex; padding: 4px; border-radius: 12px; background: var(--field); }
+.ampm button {
+  flex: 1;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ampm button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
 
 .primary {
   border: 0;
