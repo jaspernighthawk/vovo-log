@@ -2,11 +2,17 @@
  * with no signal. Network requests to the Apps Script backend are never cached.
  * Bump CACHE whenever a shell file changes so phones pick up the new version. */
 
-const CACHE = 'vovo-shell-v2';
+const CACHE = 'vovo-shell-v3';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the browser's HTTP cache (GitHub Pages serves files with
+  // max-age=600), so a new version never installs stale copies of the shell.
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
