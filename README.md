@@ -76,4 +76,4 @@ node dev/mock-server.mjs --seed
 
 Then open http://localhost:8787, and in Settings use URL `http://localhost:8787/exec` with token `test`. The mock keeps rows in memory only.
 
-When you change anything in `web/`, bump `CACHE` in [web/sw.js](web/sw.js) so phones refresh their cached copy.
+When you change anything in `web/`, bump `CACHE` in [web/sw.js](web/sw.js) so phones refresh their cached copy. On the phone, the new version is picked up on the next *cold* launch: swipe the app away in the app switcher, then reopen it.

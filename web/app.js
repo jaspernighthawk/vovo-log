@@ -21,7 +21,8 @@
   };
   const TEMP_WARM = 100.0; // °F — orange from here
   const TEMP_HOT = 101.0; // °F — red from here
-  const FETCH_ROWS = 300;
+  const FETCH_ROWS = 500;
+  const TIME_STEP_MIN = 5; // custom-time picker granularity (also step= on the input)
   const UNRECORDED = '?'; // cath value when the volume wasn't measured (same literal in Code.gs)
   const KEYS = { config: 'vovo.config', outbox: 'vovo.outbox', rows: 'vovo.rows' };
 
@@ -238,7 +239,9 @@
   let customTime = false;
 
   function localDatetimeValue(d) {
-    return `${dayKey(d)}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    const r = new Date(d);
+    r.setMinutes(Math.round(r.getMinutes() / TIME_STEP_MIN) * TIME_STEP_MIN, 0, 0);
+    return `${dayKey(r)}T${pad2(r.getHours())}:${pad2(r.getMinutes())}`;
   }
 
   function recentMeds() {

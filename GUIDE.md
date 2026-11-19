@@ -68,7 +68,7 @@ There is no Background Sync API on iOS; the queue is flushed when the app is ope
 - The token lives in **Script Properties** (`Project Settings → Script Properties`), set by `setup()`. It is never in the code or the repo. To rotate it: change the property, then enter the new one on both phones.
 - Deployed "Execute as me, anyone can access" means the script runs with the owner's Google permissions regardless of who calls it — the token is the only gate. Keep it out of screenshots.
 - Apps Script answers POSTs with a 302 redirect to a `googleusercontent.com` URL. `fetch` follows it; `curl` needs `-L`.
-- `doGet` returns at most `MAX_ROWS_RETURNED` (2000) rows; `n` defaults to 300.
+- `doGet` returns at most `MAX_ROWS_RETURNED` (2000) rows; the app asks for `FETCH_ROWS` (500).
 - Redeploying: edits to the code don't go live until you create a **new version** of the deployment.
 
 ## The Sheet
