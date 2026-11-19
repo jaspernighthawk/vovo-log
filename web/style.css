@@ -341,8 +341,10 @@ body.log-only .pad { display: none; }
 .check:has(input:checked) { color: var(--ink); }
 .field:has(input:disabled) { opacity: 0.4; }
 
+.time-field { display: flex; gap: 8px; }
 .time-field input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 12px 14px;
   border: 0;
   border-radius: 12px;

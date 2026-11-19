@@ -56,7 +56,8 @@
       <input type="checkbox" id="notRecorded"> Volume not recorded
     </label>
     <div class="time-field" id="timeField" hidden>
-      <input type="datetime-local" id="entryTime" step="300" aria-label="When">
+      <input type="date" id="entryDate" aria-label="Date">
+      <input type="time" id="entryTime" step="300" aria-label="Time">
     </div>
     <p class="error" id="entryError" role="alert"></p>
     <button type="submit" class="primary" id="submitBtn">Log now</button>

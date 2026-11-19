@@ -46,7 +46,7 @@
     status: $('status'), menuBtn: $('menuBtn'), menu: $('menu'), sheetLink: $('sheetLink'),
     tape: $('tape'), pad: $('pad'), scrim: $('scrim'), toast: $('toast'),
     entrySheet: $('entrySheet'), entryTitle: $('entryTitle'), entryValue: $('entryValue'),
-    entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryTime: $('entryTime'),
+    entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryDate: $('entryDate'), entryTime: $('entryTime'),
     entryError: $('entryError'), submitBtn: $('submitBtn'), timeToggle: $('timeToggle'),
     notRecordedWrap: $('notRecordedWrap'), notRecorded: $('notRecorded'),
     setupSheet: $('setupSheet'), setupCode: $('setupCode'), setupWho: $('setupWho'), setupUrl: $('setupUrl'),
@@ -178,6 +178,7 @@
   // ---------- network ----------
 
   let syncing = false;
+  let syncAgain = false; // a sync was requested while one was running
 
   async function post(entries) {
     // text/plain keeps the browser from sending a CORS preflight, which Apps Script can't answer.
@@ -202,9 +203,11 @@
   }
 
   async function sync({ pull = true, quiet = true } = {}) {
-    if (syncing || !config.url || !config.token) return;
+    if (!config.url || !config.token) return;
+    if (syncing) { syncAgain = true; return; }
     if (!navigator.onLine) { renderStatus(); return; }
     syncing = true;
+    syncAgain = false;
     try {
       const toSend = outbox.filter((e) => !e.rejected);
       if (toSend.length) {
@@ -230,6 +233,7 @@
       if (!quiet) toast(`Sync failed: ${err.message}`, 4000);
     } finally {
       syncing = false;
+      if (syncAgain) sync({ pull, quiet: true });
     }
   }
 
@@ -238,10 +242,19 @@
   let currentType = null;
   let customTime = false;
 
-  function localDatetimeValue(d) {
+  // iOS ignores step= on datetime-local but honours it on a plain time input,
+  // so the custom time is two fields: date and time.
+  function setCustomTime(d) {
     const r = new Date(d);
     r.setMinutes(Math.round(r.getMinutes() / TIME_STEP_MIN) * TIME_STEP_MIN, 0, 0);
-    return `${dayKey(r)}T${pad2(r.getHours())}:${pad2(r.getMinutes())}`;
+    el.entryDate.value = dayKey(r);
+    el.entryTime.value = `${pad2(r.getHours())}:${pad2(r.getMinutes())}`;
+  }
+
+  function getCustomTime() {
+    if (!el.entryDate.value || !el.entryTime.value) return null;
+    const d = new Date(`${el.entryDate.value}T${el.entryTime.value}`);
+    return isNaN(d.getTime()) ? null : d;
   }
 
   function recentMeds() {
@@ -267,7 +280,7 @@
     el.submitBtn.textContent = 'Log now';
     el.timeToggle.textContent = 'Different time…';
     el.timeField.hidden = true;
-    el.entryTime.value = localDatetimeValue(new Date());
+    setCustomTime(new Date());
     el.notRecorded.checked = false;
     el.entryValue.disabled = false;
     el.notRecordedWrap.hidden = type !== 'cath';
@@ -314,8 +327,8 @@
 
     let when = new Date();
     if (customTime) {
-      when = new Date(el.entryTime.value);
-      if (isNaN(when.getTime())) { el.entryError.textContent = 'Pick a time.'; return; }
+      when = getCustomTime();
+      if (!when) { el.entryError.textContent = 'Pick a date and time.'; return; }
     }
 
     const entry = {
@@ -424,7 +437,7 @@
     el.timeField.hidden = !customTime;
     el.submitBtn.textContent = customTime ? 'Log at that time' : 'Log now';
     el.timeToggle.textContent = customTime ? 'Use the current time instead' : 'Different time…';
-    if (customTime) { el.entryTime.value = localDatetimeValue(new Date()); el.entryTime.focus(); }
+    if (customTime) { setCustomTime(new Date()); el.entryTime.focus(); }
   });
 
   el.setupCode.addEventListener('input', () => {
