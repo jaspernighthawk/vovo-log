@@ -16,6 +16,7 @@ const DASHBOARD_SHEET = 'Dashboard';
 const HEADERS = ['timestamp', 'type', 'value', 'who', 'note', 'id'];
 const TYPES = ['cath', 'temp', 'med', 'comment'];
 const NUMERIC_TYPES = ['cath', 'temp'];
+const UNRECORDED = '?'; // allowed as a cath value when the volume wasn't measured
 const DEDUPE_WINDOW = 500; // how many recent ids to check against retried uploads
 const MAX_ROWS_RETURNED = 2000;
 
@@ -122,7 +123,9 @@ function toRow_(entry) {
   if (isNaN(timestamp.getTime())) return { error: 'Bad timestamp' };
 
   let value = entry.value;
-  if (NUMERIC_TYPES.indexOf(type) !== -1) {
+  if (type === 'cath' && value === UNRECORDED) {
+    // keep the literal '?'
+  } else if (NUMERIC_TYPES.indexOf(type) !== -1) {
     value = Number(value);
     if (!isFinite(value)) return { error: 'Value must be a number' };
   } else {

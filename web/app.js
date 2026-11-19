@@ -22,6 +22,7 @@
   const TEMP_WARM = 100.0; // °F — orange from here
   const TEMP_HOT = 101.0; // °F — red from here
   const FETCH_ROWS = 300;
+  const UNRECORDED = '?'; // cath value when the volume wasn't measured (same literal in Code.gs)
   const KEYS = { config: 'vovo.config', outbox: 'vovo.outbox', rows: 'vovo.rows' };
 
   // ---------- storage ----------
@@ -46,6 +47,7 @@
     entrySheet: $('entrySheet'), entryTitle: $('entryTitle'), entryValue: $('entryValue'),
     entryUnit: $('entryUnit'), chips: $('chips'), timeField: $('timeField'), entryTime: $('entryTime'),
     entryError: $('entryError'), submitBtn: $('submitBtn'), timeToggle: $('timeToggle'),
+    notRecordedWrap: $('notRecordedWrap'), notRecorded: $('notRecorded'),
     setupSheet: $('setupSheet'), setupCode: $('setupCode'), setupWho: $('setupWho'), setupUrl: $('setupUrl'),
     setupToken: $('setupToken'), setupSheetUrl: $('setupSheetUrl'), setupError: $('setupError'),
   };
@@ -96,7 +98,7 @@
       return;
     }
 
-    const cathMax = Math.max(60, ...entries.filter((e) => e.type === 'cath').map((e) => Number(e.value) || 0));
+    const cathMax = Math.max(60, ...entries.filter((e) => e.type === 'cath' && isFinite(Number(e.value))).map((e) => Number(e.value) || 0));
     let lastDay = '';
 
     entries.forEach((e) => {
@@ -117,7 +119,10 @@
       const text = document.createElement('span');
       text.className = 'text';
 
-      if (e.type === 'cath') {
+      if (e.type === 'cath' && e.value === UNRECORDED) {
+        text.innerHTML = `${timeLabel(d)} - ?<small>ml</small>`;
+        row.append(text);
+      } else if (e.type === 'cath') {
         text.innerHTML = `${timeLabel(d)} - ${Number(e.value)}<small>ml</small>`;
         const bar = document.createElement('span');
         bar.className = 'bar';
@@ -260,6 +265,9 @@
     el.timeToggle.textContent = 'Different time…';
     el.timeField.hidden = true;
     el.entryTime.value = localDatetimeValue(new Date());
+    el.notRecorded.checked = false;
+    el.entryValue.disabled = false;
+    el.notRecordedWrap.hidden = type !== 'cath';
 
     el.chips.innerHTML = '';
     if (type === 'med') {
@@ -288,7 +296,10 @@
   function submitEntry() {
     const t = TYPES[currentType];
     let value = el.entryValue.value.trim();
-    if (t.numeric) {
+    const unrecorded = currentType === 'cath' && el.notRecorded.checked;
+    if (unrecorded) {
+      value = UNRECORDED;
+    } else if (t.numeric) {
       value = Number(value.replace(',', '.'));
       if (!isFinite(value)) { el.entryError.textContent = 'Enter a number.'; return; }
       if (currentType === 'temp' && (value < 90 || value > 110)) { el.entryError.textContent = 'That doesn’t look like °F.'; return; }
@@ -399,6 +410,12 @@
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeSheets(); });
 
   el.entrySheet.addEventListener('submit', (ev) => { ev.preventDefault(); submitEntry(); });
+  el.notRecorded.addEventListener('change', () => {
+    const on = el.notRecorded.checked;
+    el.entryValue.disabled = on;
+    if (on) { el.entryValue.value = ''; el.entryError.textContent = ''; el.entryValue.blur(); }
+    else el.entryValue.focus();
+  });
   el.timeToggle.addEventListener('click', () => {
     customTime = !customTime;
     el.timeField.hidden = !customTime;

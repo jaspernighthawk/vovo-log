@@ -28,7 +28,7 @@ Three independent pieces. Each can be replaced without touching the others as lo
 | `id`        | `"3b1f…"`                    | UUID made on the phone. The backend ignores a repeated id.   |
 | `timestamp` | `"2026-10-28T21:15:00.000Z"` | ISO 8601, UTC. The Sheet shows it in the Sheet's timezone.   |
 | `type`      | `cath` `temp` `med` `comment`| anything else is rejected                                    |
-| `value`     | `17` / `98.6` / `"Macrobid"` | number for cath/temp, text otherwise                         |
+| `value`     | `17` / `98.6` / `"Macrobid"` | number for cath/temp, text otherwise; `"?"` = cath volume not recorded |
 | `who`       | `"Jasper"`                   | the name entered in Settings on that phone                   |
 | `note`      | `"entered 2026-10-…"`        | free text; the app uses it to record back-dated entries      |
 
@@ -85,6 +85,8 @@ There is no Background Sync API on iOS; the queue is flushed when the app is ope
 ```
 =QUERY(Log!A:F, "select A, C where B = 'temp' order by A desc limit 50", 1)
 ```
+
+A `?` in the value column (volume not recorded) comes out of `QUERY` as a blank, so charts simply skip it.
 
 Chart those ranges (Insert → Chart; horizontal bar for cath, line for temp). The 🌈 → "View chart" link opens the Dashboard tab directly in the Sheets app via the `#gid=` in the URL.
 

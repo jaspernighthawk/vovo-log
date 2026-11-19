@@ -46,7 +46,7 @@ http.createServer((req, res) => {
       for (const e of data.entries || [data]) {
         if (log.some((r) => r.id === e.id)) { saved.push(e.id); continue; }
         if (!['cath', 'temp', 'med', 'comment'].includes(e.type)) { rejected.push({ id: e.id, error: 'Unknown type: ' + e.type }); continue; }
-        if (['cath', 'temp'].includes(e.type) && !isFinite(Number(e.value))) { rejected.push({ id: e.id, error: 'Value must be a number' }); continue; }
+        if (['cath', 'temp'].includes(e.type) && !isFinite(Number(e.value)) && !(e.type === 'cath' && e.value === '?')) { rejected.push({ id: e.id, error: 'Value must be a number' }); continue; }
         log.push({ timestamp: e.timestamp, type: e.type, value: e.value, who: e.who || '', note: e.note || '', id: e.id });
         saved.push(e.id);
         console.log('row', e.type, e.value, e.who);

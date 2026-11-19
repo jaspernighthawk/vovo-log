@@ -18,6 +18,8 @@ GUIDE.md  how the pieces fit together, for future maintenance
 3. In the script editor, choose the function **`setup`** in the toolbar and press **Run**. Approve the permissions prompt (it's your own script asking to edit your own Sheet).
 4. Open **View → Logs** (or the Execution log). Copy the **token** and the **Dashboard link** it printed — you'll paste them into the app.
 
+
+
 `setup` creates the `Log` tab (columns `timestamp, type, value, who, note, id`), the empty `Dashboard` tab, and a random token stored in Script Properties. It's safe to run again; it never touches existing rows.
 
 ### 2. Deploy the backend
@@ -26,11 +28,13 @@ GUIDE.md  how the pieces fit together, for future maintenance
 2. *Execute as:* **Me**. *Who has access:* **Anyone**. Deploy.
 3. Copy the **Web app URL** (ends in `/exec`).
 
+
 Test from the Mac (replace the URL and token):
 
 ```bash
 curl -L -s -H 'Content-Type: text/plain' -d '{"token":"TOKEN","entries":[{"id":"curl-1","timestamp":"2026-10-28T14:15:00Z","type":"cath","value":17,"who":"curl","note":"test"}]}' 'https://script.google.com/macros/s/XXX/exec'
 ```
+
 
 ```bash
 curl -L -s 'https://script.google.com/macros/s/XXX/exec?token=TOKEN&n=5'

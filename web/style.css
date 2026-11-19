@@ -328,6 +328,19 @@ body.log-only .pad { display: none; }
   text-transform: uppercase;
 }
 
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 2px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--cath); }
+.check:has(input:checked) { color: var(--ink); }
+.field:has(input:disabled) { opacity: 0.4; }
+
 .time-field input {
   width: 100%;
   padding: 12px 14px;
